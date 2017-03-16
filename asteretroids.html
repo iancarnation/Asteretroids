@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type"> 
+<meta content="utf-8" http-equiv="encoding">
+</head>
+<body>
+
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+
+<script>
+
+// **********************************************************************************
+// Sprite class slightly modified from: http://jlongster.com/Making-Sprite-based-Games-with-Canvas
+function Sprite(imageSource, frameWidth, frameHeight, speed, frameSequence)
+{
+	this.imageSource = new Image();
+	this.imageSource.src = imageSource;
+	this.frameWidth = frameWidth;
+	this.frameHeight = frameHeight;
+	this.speed = speed;
+	this.frameSequence = frameSequence;
+
+	this.currentSpeed = 0;
+	this.onceThenGone = false;
+	this.loop = false;
+
+	this.currentFrame = 0;
+};
+
+Sprite.prototype = 
+{
+	update: function(dt)
+	{
+		this.currentFrame += this.currentSpeed * dt;
+	},
+
+	playAnimation: function()
+	{
+		this.currentSpeed = this.speed;
+	},
+
+	render: function(ctx)
+	{
+		var frame;
+
+		if (this.currentSpeed > 0)
+		{
+			var max = this.frameSequence.length;
+			var idx = Math.floor(this.currentFrame);
+			frame = this.frameSequence[idx % max];
+
+			if (!this.loop && idx >= max)
+			{
+				this.currentSpeed = 0;
+				this.currentFrame = 0;
+			}
+
+			if (this.onceThenGone && idx >= max)
+			{
+				this.done = true;
+				return;
+			}
+		}
+		else
+		{
+			frame = 0;
+		}
+
+		var u = 0;
+
+		u += frame * this.frameWidth;
+		
+		ctx.drawImage(this.imageSource, u, 0, this.frameWidth, 
+							this.frameHeight, 0, 0, this.frameWidth, this.frameHeight);
+	}
+};
+
+// Preload Images -----------------------------------------
+
+this.addEventListener("DOMContentLoaded", preloadImages, true);
+
+var loadedImages = 0;
+var imageArray = new Array("Art/shep.png");
+
+function preloadImages(e) {
+	for (var i = 0; i < imageArray.length; i++) {
+		var tempImage = new Image();
+		
+		tempImage.addEventListener("load", trackProgress, true);
+		tempImage.src = imageArray[i];
+	}
+}
+
+function trackProgress() {
+	loadedImages++;
+	
+	if (loadedImages == imageArray.length) {
+		init();
+	}
+}
+// --------------------------**
+
+// **********************************************************************************
+
+var canvas;
+var ctx;
+
+// ship ------------------------------
+var shipX = 300;
+var shipY = 300;
+var velX = 0;
+var velY = 0;
+var accX = 0;
+var accY = 0;
+var rot  = 0;
+
+// images ---------------------------------------
+var shipSprite;
+var shipSpriteOffsetX;
+var shipSpriteOffsetY;
+
+function init() 
+{
+		
+	console.log("Init");
+	
+	canvas = document.getElementById('gameCanvas');
+	ctx = canvas.getContext('2d');
+	
+	canvas.tabIndex = 1000;
+	
+	
+	// images -----------------------------------------
+
+	// Sprite parameters:      imageSource, width, height, speed, frameSequence
+	// shipSprite = new Sprite("Art/shep.png",30,30,0,[0]);
+	// shipSpriteOffsetX = shipSprite.width/2;
+	// shipSpriteOffsetY = shipSprite.height/2;
+	shipSprite = new Image();
+	shipSprite.src = "Art/shep.png";
+	shipSpriteOffsetX = 15;
+	shipSpriteOffsetY = 15;
+	
+	lastTime = Date.now();
+
+	main();
+}
+
+var lastTime;
+function main()
+{
+	var now = Date.now();
+    var dt = (now - lastTime) / 1000.0;
+
+	update(dt);
+	render();
+
+	lastTime = now;
+	requestAnimationFrame(main);
+}
+	
+function update(dt)
+{	
+	rot += dt;
+	if (rot >= Math.PI*2)
+	{
+		rot = 0;
+	}
+
+	velX += accX * dt;
+	velY += accY * dt;
+
+	shipX += velX;
+	shipY += velY;
+	
+	checkBoundaries();
+}
+
+function render()
+{
+	// background
+	ctx.fillStyle = '#FF6699';
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+	
+	// ship -----------
+	ctx.save();
+	ctx.translate(shipX, shipY);
+	ctx.rotate(rot);
+	ctx.translate(-shipX, -shipY);
+	ctx.drawImage(shipSprite, shipX - shipSpriteOffsetX, shipY - shipSpriteOffsetY);
+	drawDebugRect(shipX, shipY, 30, 30, 'white');
+	ctx.restore();
+	
+	// debug ----------------
+	drawDebugRect(shipX, shipY, 5, 5, 'blue');
+	
+	ctx.save();
+	ctx.translate(canvas.width/2, canvas.height/2);
+	ctx.rotate(Math.PI/4);
+	ctx.translate(-canvas.width/2, -canvas.height/2);
+	drawDebugRect(canvas.width/2 - 30, canvas.height/2 - 30, 60, 60, 'green');
+	drawDebugRect(canvas.width/2-2.5, canvas.height/2-2.5, 5, 5, 'red')
+	ctx.restore();
+	
+}
+
+function checkBoundaries()
+{
+	// right
+	if (shipX > canvas.width)
+	{
+		shipX = 0;
+	}
+	// left
+	if (shipX < 0)
+	{
+		shipX = canvas.width;
+	}
+	//top
+	if (shipY < 0)
+	{
+		shipY = canvas.height;
+	}
+	// bottom
+	if (shipY > canvas.height)
+	{
+		shipY = 0;
+	}
+	
+}
+
+function drawDebugRect(x, y, width, height, color)
+{
+	ctx.strokeStyle = color;
+	ctx.strokeRect(x, y, width, height);
+}
+
+</script>
+
+</html>
