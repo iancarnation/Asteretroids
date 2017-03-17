@@ -105,6 +105,33 @@ function trackProgress() {
 
 // **********************************************************************************
 
+// Lazer >>>>>>>>>>>>>>>>>>>
+
+function Lazer(x,y,velX,velY)
+{
+	this.x = x;
+	this.y = y;
+	this.velX = velX;
+	this.velY = velY;
+}
+
+Lazer.prototype = 
+{
+	update: function(dt)
+	{
+		this.x += this.velX * dt;
+		this.y += this.velY * dt;
+	},
+	
+	render: function()
+	{
+		ctx.fillStyle = 'white';
+		ctx.fillRect(this.x, this.y, 4, 4);
+	}
+};
+
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 var canvas;
 var ctx;
 
@@ -120,6 +147,11 @@ var thrust = 5.0;
 var rot  = 0;
 var turnAmt = 0.2;
 var fire = false;
+
+// lazers ------------------------------
+var lazerTest;
+var lazerSpeed = 15;
+
 
 // images ---------------------------------------
 var shipSprite;
@@ -144,6 +176,8 @@ function init()
 	shipSprite = new Sprite("Art/shep.png",30,30,0,[0]);
 	shipSpriteOffsetX = shipSprite.width/2;
 	shipSpriteOffsetY = shipSprite.height/2;
+	
+	lazerTest = new Lazer(20, 20, 3, 3);
 	
 	lastTime = Date.now();
 
@@ -186,6 +220,8 @@ function update(dt)
 		spawnLazer();
 		fire = false;
 	}
+	
+	lazerTest.update(dt);
 }
 
 function render()
@@ -200,6 +236,8 @@ function render()
 	ctx.rotate(rot);
 	shipSprite.render(ctx);
 	ctx.restore();
+	
+	lazerTest.render();
 	
 	// debug ----------------
 	//drawDebugRect(shipX, shipY, 5, 5, 'blue');
