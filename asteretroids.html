@@ -153,7 +153,10 @@ var maxAcc = 20;
 var thrust = 5.0;
 var rot  = 0;
 var turnAmt = 0.2;
+
 var fire = false;
+var fireDelay = 0.2;
+var cooldown = 0;
 
 // lazers ------------------------------
 var lazerBeamz = [];
@@ -169,7 +172,7 @@ var shipSpriteOffsetY;
 var keys = {
 	
 	38:{/*up*/			down:false, action:function(){accX += Math.cos(rot) * thrust;
-									  				  accY += Math.sin(rot) * thrust;}},
+									  				  		   accY += Math.sin(rot) * thrust;}},
 	37:{/*turn left*/ 	down:false, action:function(){rot -= turnAmt;}},
 	39:{/*turn right*/ 	down:false, action:function(){rot += turnAmt;}},
 	32:{/*fire weapon*/ down:false, action:function(){fire = true;}},
@@ -226,11 +229,8 @@ function main()
 	
 function update(dt)
 {	
-	// input
-	for(var key in keys)
-		if(keys[key].down)
-			keys[key].action();
-
+	handleInput();
+	
 	if (rot >= Math.PI*2)
 	{
 		rot = 0;
@@ -246,13 +246,7 @@ function update(dt)
 	accY = 0;
 	
 	checkBoundaries();
-	
-	if (fire)
-	{
-		spawnLazer();
-		fire = false;
-	}
-	
+	checkWeaponFire(dt);
 	updateLazers(dt);
 }
 
@@ -310,33 +304,26 @@ function drawDebugRect(x, y, width, height, color)
 	ctx.strokeStyle = color;
 	ctx.strokeRect(x, y, width, height);
 }
-/*
+
 function handleInput(e)
 {
-
-	// forward
-	if (e.keyCode == 38)
-	{		
-		accX += Math.cos(rot) * thrust;
-		accY += Math.sin(rot) * thrust;
-	}
-	// turn left
-	if (e.keyCode == 37)
-	{
-		rot -= turnAmt;
-	}
-	// turn right
-	if (e.keyCode == 39)
-	{
-		rot += turnAmt;
-	}
-	// fire weapon
-	if (e.keyCode == 32)
-	{
-		fire = true;
-	}
+	for(var key in keys)
+		if(keys[key].down)
+				keys[key].action();
 }
-*/
+
+function checkWeaponFire(dt)
+{
+	if (fire && cooldown <= 0)
+	{
+		spawnLazer();
+		cooldown = fireDelay;
+		fire = false;
+	}
+	cooldown -= dt;
+	fire = false;
+}
+
 function spawnLazer()
 {
 	for (var i=0; i<lazerBeamz.length; i++)
