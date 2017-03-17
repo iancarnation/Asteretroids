@@ -6,7 +6,7 @@
 </head>
 <body>
 
-<canvas id="gameCanvas" width="800" height="600"></canvas>
+<canvas id="gameCanvas" width="1024" height="576"></canvas>
 
 <script>
 
@@ -145,8 +145,8 @@ function Aesteroid(x,y)
 {
 	this.x = x;
 	this.y = y;
-	this.velX = -10;
-	this.velY = 5;
+	this.velX = -100;
+	this.velY = 50;
 
 	this.sprite = new Sprite("Art/aester_big.png", 50, 50, 0, [0]);
 };
@@ -155,6 +155,21 @@ Aesteroid.prototype = {
 
 	update: function(dt)
 	{
+		// check boundaries
+
+		// right
+		if (this.x > canvas.width)
+			this.x = 0;
+		// left
+		if (this.x < 0)
+			this.x = canvas.width;
+		//top
+		if (this.y < 0)
+			this.y = canvas.height;
+		// bottom
+		if (this.y > canvas.height)
+			this.y = 0;
+
 		this.x += this.velX * dt;
 		this.y += this.velY * dt;
 	},
@@ -178,9 +193,9 @@ var velY = 0;
 var accX = 0;
 var accY = 0;
 var maxAcc = 20;
-var thrust = 5.0;
+var thrust = 3.0;
 var rot  = 0;
-var turnAmt = 0.2;
+var turnAmt = 0.1;
 
 var fire = false;
 var fireDelay = 0.2;
