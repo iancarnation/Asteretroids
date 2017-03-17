@@ -83,7 +83,7 @@ Sprite.prototype =
 this.addEventListener("DOMContentLoaded", preloadImages, true);
 
 var loadedImages = 0;
-var imageArray = new Array("Art/shep.png");
+var imageArray = new Array("Art/shep.png", "Art/aester_big.png");
 
 function preloadImages(e) {
 	for (var i = 0; i < imageArray.length; i++) {
@@ -139,6 +139,34 @@ Lazer.prototype =
 
 // >>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+// Aesteroid ******************************
+
+function Aesteroid(x,y)
+{
+	this.x = x;
+	this.y = y;
+	this.velX = -10;
+	this.velY = 5;
+
+	this.sprite = new Sprite("Art/aester_big.png", 50, 50, 0, [0]);
+};
+
+Aesteroid.prototype = {
+
+	update: function(dt)
+	{
+		this.x += this.velX * dt;
+		this.y += this.velY * dt;
+	},
+
+	render: function(_ctx)
+	{
+		this.sprite.render(_ctx);
+	}
+};
+
+// **************************************
+
 var canvas;
 var ctx;
 
@@ -166,8 +194,8 @@ var offstage = -5;
 
 // images ---------------------------------------
 var shipSprite;
-var shipSpriteOffsetX;
-var shipSpriteOffsetY;
+
+var aesterTest;
 
 var keys = {
 	
@@ -199,8 +227,9 @@ function init()
 
 	//Sprite parameters:      imageSource, width, height, speed, frameSequence
 	shipSprite = new Sprite("Art/shep.png",30,30,0,[0]);
-	shipSpriteOffsetX = shipSprite.width/2;
-	shipSpriteOffsetY = shipSprite.height/2;
+
+	// aesters *************
+	aesterTest = new Aesteroid(canvas.width - 50, -60);
 
 	// lazers >>>>>>>>>>>>>>>>>>>>
 	for (var i=0; i<20; i++)
@@ -248,6 +277,7 @@ function update(dt)
 	checkBoundaries();
 	checkWeaponFire(dt);
 	updateLazers(dt);
+	updateAesteroids(dt);
 }
 
 function render()
@@ -269,6 +299,11 @@ function render()
 		lazerBeamz[i].render();
 	}
 	
+	ctx.save();
+	ctx.translate(aesterTest.x, aesterTest.y);
+	aesterTest.render(ctx);
+	ctx.restore();
+
 	// debug ----------------
 	//drawDebugRect(shipX, shipY, 5, 5, 'blue');
 	
@@ -353,6 +388,11 @@ function updateLazers(dt)
 
 		lazerBeamz[i].update(dt);
 	}
+}
+
+function updateAesteroids(dt)
+{
+	aesterTest.update(dt);
 }
 
 </script>
