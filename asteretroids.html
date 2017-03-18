@@ -215,7 +215,7 @@ var aesterTest;
 var keys = {
 	
 	38:{/*up*/			down:false, action:function(){accX += Math.cos(rot) * thrust;
-									  				  		   accY += Math.sin(rot) * thrust;}},
+									  				  accY += Math.sin(rot) * thrust;}},
 	37:{/*turn left*/ 	down:false, action:function(){rot -= turnAmt;}},
 	39:{/*turn right*/ 	down:false, action:function(){rot += turnAmt;}},
 	32:{/*fire weapon*/ down:false, action:function(){fire = true;}},
