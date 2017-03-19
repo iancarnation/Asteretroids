@@ -3,6 +3,7 @@
 <head>
 <meta content="text/html;charset=utf-8" http-equiv="Content-Type"> 
 <meta content="utf-8" http-equiv="encoding">
+<style> canvas {outline: none;} </style>
 </head>
 <body>
 
@@ -28,6 +29,7 @@ function Sprite(imageSource, frameWidth, frameHeight, speed, frameSequence)
 	this.currentFrame = 0;
 	this.offsetX = this.frameWidth/2;
 	this.offsetY = this.frameHeight/2;
+	this.radius = frameWidth/2;
 };
 
 Sprite.prototype = 
@@ -114,6 +116,8 @@ function Lazer(x,y,velX,velY)
 	this.velX = velX;
 	this.velY = velY;
 	this.alive = false;
+
+	this.radius = 5;
 }
 
 Lazer.prototype = 
@@ -182,6 +186,8 @@ Aesteroid.prototype = {
 
 // **************************************
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 var canvas;
 var ctx;
 
@@ -229,7 +235,9 @@ function init()
 	canvas = document.getElementById('gameCanvas');
 	ctx = canvas.getContext('2d');
 	
-	canvas.tabIndex = 1000;
+	canvas.tabIndex = 0;
+	canvas.focus();
+	canvas.outline = 'none';
 	
 	canvas.addEventListener('keydown', function(e){
 		if(keys[e.keyCode]) keys[e.keyCode].down = true;
@@ -293,6 +301,7 @@ function update(dt)
 	checkWeaponFire(dt);
 	updateLazers(dt);
 	updateAesteroids(dt);
+	checkCollisions();
 }
 
 function render()
@@ -409,6 +418,33 @@ function updateAesteroids(dt)
 {
 	aesterTest.update(dt);
 }
+
+function checkCollisions()
+{
+	for (var l=0; l<lazerBeamz.length; l++)
+	{
+		for (var a=0; a<aesters.length; a++)
+		{
+			if (circleColliding(lazerBeamz[l], aesters[a]))
+			{
+				//blowup
+			}
+		}
+		
+	}
+}
+
+function circleColliding(object1, object2)
+{
+	distance = Math.sqrt(
+	            ((objec1.x - object2.x) * (objec1.x – object2.x))
+	          + ((objec1.y - object2.y) * (objec1.y – object2.y))
+	           );
+
+	if (distance < object1.radius + object2.radius)
+		return true;
+}
+
 
 </script>
 
