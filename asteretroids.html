@@ -29,7 +29,8 @@ function Sprite(imageSource, frameWidth, frameHeight, speed, frameSequence)
 	this.currentFrame = 0;
 	this.offsetX = this.frameWidth/2;
 	this.offsetY = this.frameHeight/2;
-	this.radius = frameWidth/2;
+
+	this.scale = 1;
 };
 
 Sprite.prototype = 
@@ -76,7 +77,7 @@ Sprite.prototype =
 		u += frame * this.frameWidth;
 		
 		_ctx.drawImage(this.imageSource, u, 0, this.frameWidth, 
-							this.frameHeight, -this.offsetX, -this.offsetY, this.frameWidth, this.frameHeight);
+							this.frameHeight, -this.offsetX, -this.offsetY, this.frameWidth * this.scale, this.frameHeight * this.scale);
 	}
 };
 
@@ -149,10 +150,15 @@ function Aesteroid(x,y)
 {
 	this.x = x;
 	this.y = y;
-	this.velX = -100;
-	this.velY = 50;
+	this.velX = Math.floor(Math.random() * 201) -100;
+	this.velY = Math.floor(Math.random() * 201) -100;
 
 	this.sprite = new Sprite("Art/aester_big.png", 50, 50, 0, [0]);
+
+	this.alive = true;
+
+	this.radius = this.sprite.frameWidth/2;
+	// this.damageStage = 0;
 };
 
 Aesteroid.prototype = {
@@ -212,11 +218,11 @@ var lazerBeamz = [];
 var lazerSpeed = 800;
 var offstage = -5;
 
+// aesteroids ---------------------------
+var aesteroids = [];
 
 // images ---------------------------------------
 var shipSprite;
-
-var aesterTest;
 
 var keys = {
 	
@@ -252,8 +258,13 @@ function init()
 	shipSprite = new Sprite("Art/shep.png",30,30,0,[0]);
 
 	// aesters *************
-	aesterTest = new Aesteroid(canvas.width - 50, -60);
-
+	for (var i=0; i<10; i++)
+	{
+		var randomX = Math.floor(Math.random() * 1000) - 60;
+		var randomY = Math.floor(Math.random() * 1000) - 60;
+		ae = new Aesteroid(randomX, randomY);
+		aesteroids.push(ae);
+	}
 	// lazers >>>>>>>>>>>>>>>>>>>>
 	for (var i=0; i<20; i++)
 	{
@@ -322,11 +333,14 @@ function render()
 	{
 		lazerBeamz[i].render();
 	}
+	for (var a=0; a<aesteroids.length; a++)
+	{
+		ctx.save();
+		ctx.translate(aesteroids[a].x, aesteroids[a].y);
+		aesteroids[a].render(ctx);
+		ctx.restore();
+	}
 	
-	ctx.save();
-	ctx.translate(aesterTest.x, aesterTest.y);
-	aesterTest.render(ctx);
-	ctx.restore();
 
 	// debug ----------------
 	//drawDebugRect(shipX, shipY, 5, 5, 'blue');
@@ -416,18 +430,23 @@ function updateLazers(dt)
 
 function updateAesteroids(dt)
 {
-	aesterTest.update(dt);
+	for (var a=0; a<aesteroids.length; a++)
+	{
+		if (aesteroids[a].alive)
+			aesteroids[a].update(dt);
+	}
 }
 
 function checkCollisions()
 {
 	for (var l=0; l<lazerBeamz.length; l++)
 	{
-		for (var a=0; a<aesters.length; a++)
+		if (lazerBeamz[l].alive)
 		{
-			if (circleColliding(lazerBeamz[l], aesters[a]))
+			for (var a=0; a<aesteroids.length; a++)			
 			{
-				//blowup
+				if (circleColliding(lazerBeamz[l], aesteroids[a]))
+					console.log("dingding");
 			}
 		}
 		
@@ -437,9 +456,9 @@ function checkCollisions()
 function circleColliding(object1, object2)
 {
 	distance = Math.sqrt(
-	            ((objec1.x - object2.x) * (objec1.x – object2.x))
-	          + ((objec1.y - object2.y) * (objec1.y – object2.y))
-	           );
+            ((object1.x - object2.x) * (object1.x - object2.x))
+          + ((object1.y - object2.y) * (object1.y - object2.y))
+           );
 
 	if (distance < object1.radius + object2.radius)
 		return true;
