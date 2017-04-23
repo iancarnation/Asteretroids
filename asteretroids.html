@@ -78,6 +78,7 @@ Sprite.prototype =
 		
 		_ctx.drawImage(this.imageSource, u, 0, this.frameWidth, 
 							this.frameHeight, -this.offsetX, -this.offsetY, this.frameWidth * this.scale, this.frameHeight * this.scale);
+
 	}
 };
 
@@ -158,13 +159,15 @@ function Aesteroid(x,y)
 	this.alive = true;
 
 	this.radius = this.sprite.frameWidth/2;
-	// this.damageStage = 0;
+	this.damageStage = 1;
 };
 
 Aesteroid.prototype = {
 
 	update: function(dt)
 	{
+
+
 		// check boundaries
 
 		// right
@@ -187,6 +190,22 @@ Aesteroid.prototype = {
 	render: function(_ctx)
 	{
 		this.sprite.render(_ctx);
+		if (_debug)
+		{
+			drawDebugCircle(_ctx, 0, 0, this.radius, 'blue');
+		}
+	},
+
+	hit: function()
+	{
+		this.damageStage ++;
+		if (this.damageStage > maxAesterDamage)
+			this.alive = false;
+		else
+		{
+			this.sprite.scale = 1/this.damageStage;
+			this.radius = (this.sprite.frameWidth/2) * this.sprite.scale;
+		}
 	}
 };
 
@@ -196,6 +215,7 @@ Aesteroid.prototype = {
 
 var canvas;
 var ctx;
+var _debug = false;
 
 // ship ------------------------------
 var shipX = 300;
@@ -220,6 +240,7 @@ var offstage = -5;
 
 // aesteroids ---------------------------
 var aesteroids = [];
+var maxAesterDamage = 3;
 
 // images ---------------------------------------
 var shipSprite;
@@ -231,6 +252,8 @@ var keys = {
 	37:{/*turn left*/ 	down:false, action:function(){rot -= turnAmt;}},
 	39:{/*turn right*/ 	down:false, action:function(){rot += turnAmt;}},
 	32:{/*fire weapon*/ down:false, action:function(){fire = true;}},
+	
+	66:{/*debug*/ down:false, action:function(){_debug = !_debug;}},
 };
 
 function init() 
@@ -258,6 +281,12 @@ function init()
 	shipSprite = new Sprite("Art/shep.png",30,30,0,[0]);
 
 	// aesters *************
+	// one pool, holding area off-screen
+	// periodically spawn at random point outside -> there will be a limited number per wave
+	// have enough for multiples -> stages of damage
+	// when an aester dies, it reduces in size and spawns a reduced clone in-place
+
+
 	for (var i=0; i<10; i++)
 	{
 		var randomX = Math.floor(Math.random() * 1000) - 60;
@@ -343,10 +372,12 @@ function render()
 	
 
 	// debug ----------------
-	//drawDebugRect(shipX, shipY, 5, 5, 'blue');
 	
+	if (_debug)
+	{
+		//drawDebugRect(shipX, shipY, 5, 5, 'blue');
+	}
 }
-
 function checkBoundaries()
 {
 	// right
@@ -370,12 +401,6 @@ function checkBoundaries()
 		shipY = 0;
 	}
 	
-}
-
-function drawDebugRect(x, y, width, height, color)
-{
-	ctx.strokeStyle = color;
-	ctx.strokeRect(x, y, width, height);
 }
 
 function handleInput(e)
@@ -446,7 +471,15 @@ function checkCollisions()
 			for (var a=0; a<aesteroids.length; a++)			
 			{
 				if (circleColliding(lazerBeamz[l], aesteroids[a]))
-					console.log("dingding");
+				{
+					lazerBeamz[l].alive = false;
+
+					aesteroids[a].hit();
+
+					var a = aesteroids[a];
+					// split 
+
+				}
 			}
 		}
 		
@@ -463,6 +496,26 @@ function circleColliding(object1, object2)
 	if (distance < object1.radius + object2.radius)
 		return true;
 }
+
+function drawDebugRect(x, y, width, height, color)
+{
+	ctx.strokeStyle = color;
+	ctx.strokeRect(x, y, width, height);
+}
+
+function drawDebugCircle(_ctx, x, y, radius, color)
+{
+	_ctx.strokeStyle = color;
+	_ctx.beginPath();
+	_ctx.arc(x,y,radius,0,2*Math.PI);
+	_ctx.stroke();
+}
+
+function debugInfo()
+{
+	// do some fps and stuff
+}
+
 
 
 </script>
